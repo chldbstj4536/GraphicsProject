@@ -5,23 +5,18 @@
 #include "ysRenderer.h"
 #include "ysWindow.h"
 
+using namespace YS::Graphics;
+
 int main()
 {
-    std::shared_ptr<YS::Graphics::Window> pWin = YS::Graphics::Window::Create(YS::Graphics::Rect{ 100, 100, 800, 600 }, TEXT("Learn to Program Windows"));
-    std::shared_ptr<YS::Graphics::SwRenderer> pSwRenderer = YS::Graphics::SwRenderer::Create(pWin);
-
     HWND hWndConsole = GetConsoleWindow();
 
-    pWin->SetName(TEXT("Change window name"));
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<YS::UInt> dis(0, 0xffffffff);
+    std::shared_ptr<Window> pWin = Window::Create(Rect{ 100, 100, 800, 600 }, TEXT("Learn to Program Windows"), Window::WindowStyle::Full_Borderless);
+    std::shared_ptr<SwRenderer> pSwRenderer = SwRenderer::Create(pWin);
 
     while (!pWin->IsClosed())
     {
-        YS::Graphics::Color color(dis(gen));
-        pSwRenderer->SetClearColor(color);
+        pSwRenderer->SetClearColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
         pSwRenderer->Clear();
         pSwRenderer->Swap();
     }

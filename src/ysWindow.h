@@ -16,6 +16,7 @@ namespace YS::Graphics
     {
         enum class State { InInit, Success, Fail };
     public:
+        enum class WindowStyle { Fullscreen, Full_Borderless, Borderless, Normal};
 /// @cond
         Window() = delete;
         Window(Window const&) = delete;
@@ -36,9 +37,10 @@ namespace YS::Graphics
          * @return 생성된 윈도우
          * @throw YS::create_failed 윈도우 생성 실패시 예외 발생
          */
-        static std::shared_ptr<Window> Create(Rect rect, StringView name);
+        static std::shared_ptr<Window> Create(Rect rect, StringView name, WindowStyle ws);
         void Resize(UInt width, UInt height);
         void Move(Int x, Int y);
+        void Swap();
 
         String GetName() const { return m_name; }
         void SetName(StringView name);
@@ -63,6 +65,7 @@ namespace YS::Graphics
         String m_name;
         Rect m_rect;
         State m_state = State::InInit;
+        bool m_isSwap = false;
         std::thread m_msgThread;
 
 #ifdef _WIN32

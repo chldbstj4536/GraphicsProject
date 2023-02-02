@@ -29,18 +29,13 @@ void SwRenderer::Clear()
 #ifdef _WIN32
     for (UInt i = 0; i < GetViewport().width; ++i)
         for (UInt j = 0; j < GetViewport().height; ++j)
-            m_pRT[0]->SetPixel(i, j, GetClearColor());
+            m_pRT[0]->SetPixel(i, j, GetClearColor().ConvertToARGB());
 #endif
 }
 void SwRenderer::Swap()
 {
     std::swap(m_pRT[0], m_pRT[1]);
-
-#ifdef _WIN32
-    auto hWnd = GetWindow().lock()->GetHWnd();
-    ::InvalidateRect(hWnd, nullptr, true);
-    ::UpdateWindow(hWnd);
-#endif
+    GetWindow().lock()->Swap();
 }
 
 #ifdef _WIN32

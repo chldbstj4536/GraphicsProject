@@ -7,46 +7,67 @@ using namespace YS::Graphics;
 Window::Window(Rect r, StringView name) : m_rect(r), m_name(name) { }
 Window::~Window() { SendMessage(m_hWnd, WM_DESTROY, 0, 0); m_msgThread.join(); }
     
-std::shared_ptr<Window> Window::Create(Rect r, StringView name)
+std::shared_ptr<Window> Window::Create(Rect r, StringView name, WindowStyle ws)
 {
     std::shared_ptr<Window> pWin = std::make_shared<enable_make_shared>(r, name);
     pWin->m_msgThread = std::thread(
-        [pWin, r]()
+        [pWin, ws]()
         {
             WNDCLASS wc = { 0 };
 
-            wc.lpfnWndProc = WindowProc;
-            wc.hInstance = GetModuleHandle(nullptr);
-            wc.lpszClassName = pWin->m_name.c_str();
+        wc.lpfnWndProc = WindowProc;
+        wc.hInstance = GetModuleHandle(nullptr);
+        wc.lpszClassName = pWin->m_name.c_str();
 
-            RegisterClass(&wc);
+        RegisterClass(&wc);
 
-            pWin->m_hWnd = CreateWindowEx(
-                0, pWin->m_name.c_str(), pWin->m_name.c_str(), WS_OVERLAPPEDWINDOW, r.x, r.y,
-                r.width, r.height, nullptr, nullptr, GetModuleHandle(nullptr), pWin.get()
-            );
+        int wsStyle = 0;
+        int showStyle = SW_SHOWNORMAL;
+        switch (ws)
+        {
+        case WindowStyle::Fullscreen:
+            wsStyle |= WS_MAXIMIZE;
+            break;
+        case WindowStyle::Full_Borderless:
+            pWin->m_rect.x = pWin->m_rect.y = 0;
+            wsStyle = WS_POPUP;
+            showStyle = SW_MAXIMIZE;
+            break;
+        case WindowStyle::Borderless:
+            wsStyle = WS_POPUP;
+            break;
+        case WindowStyle::Normal:
+            wsStyle = WS_OVERLAPPED;
+            break;
+        }
 
-            if (pWin->m_hWnd == nullptr)
+        pWin->m_hWnd = CreateWindowEx(
+            WS_EX_APPWINDOW, pWin->m_name.c_str(), pWin->m_name.c_str(), wsStyle, pWin->m_rect.x, pWin->m_rect.y,
+            pWin->m_rect.width, pWin->m_rect.height, nullptr, nullptr, GetModuleHandle(nullptr), pWin.get()
+        );
+
+        if (pWin->m_hWnd == nullptr)
+        {
+            pWin->m_state = State::Fail;
+            return;
+        }
+
+        ShowWindow(pWin->m_hWnd, showStyle);
+        pWin->m_state = State::Success;
+
+        // Run the message loop.
+        MSG msg = {};
+        while (!pWin->IsClosed())
+        {
+            if (PeekMessage(&msg, pWin->m_hWnd, 0, 0, PM_REMOVE))
             {
-                pWin->m_state = State::Fail;
-                return;
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
             }
-            ShowWindow(pWin->m_hWnd, SW_SHOWNORMAL);
-            pWin->m_state = State::Success;
-
-            // Run the message loop.
-            MSG msg = {};
-            while (!pWin->IsClosed())
-            {
-                if (PeekMessage(&msg, pWin->m_hWnd, 0, 0, PM_REMOVE))
-                {
-                    TranslateMessage(&msg);
-                    DispatchMessage(&msg);
-                }
-                else
-                    std::this_thread::yield();
-            }
-        });
+            else
+                std::this_thread::yield();
+        }
+    });
     {
         using namespace std;
         while (pWin->m_state == State::InInit) std::this_thread::sleep_for(1ms);
@@ -68,6 +89,14 @@ void Window::Move(Int x, Int y)
     m_rect.x = x;
     m_rect.y = y;
     ::MoveWindow(m_hWnd, m_rect.x, m_rect.y, m_rect.width, m_rect.height, true);
+}
+void Window::Swap()
+{
+    m_isSwap = true;
+#ifdef _WIN32
+    ::InvalidateRect(m_hWnd, nullptr, true);
+    ::UpdateWindow(m_hWnd);
+#endif
 }
 
 void Window::SetName(StringView name)
@@ -115,6 +144,9 @@ LRESULT Window::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, UInt wind
     }
     case WM_PAINT:
     {
+        if (!m_isSwap) return 0;
+
+        m_isSwap = false;
         PAINTSTRUCT ps{};
         HDC hdc = BeginPaint(m_hWnd, &ps);
         OnDraw(hdc);

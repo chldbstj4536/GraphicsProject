@@ -23,6 +23,19 @@ namespace YS::Graphics
             , b{ static_cast<float>((0xff & (hex >> 8)) / 255.0f) }
             , a{ static_cast<float>((0xff & hex) / 255.0f) } {}
 
+        UInt ConvertToRGBA() { return static_cast<UInt>(*this); }
+        UInt ConvertToARGB()
+        {
+            UInt result = 0;
+            result = static_cast<UInt>(0xff * std::clamp(a, 0.0f, 1.0f));
+            result <<= 8;
+            result |= static_cast<UInt>(0xff * std::clamp(r, 0.0f, 1.0f));
+            result <<= 8;
+            result |= static_cast<UInt>(0xff * std::clamp(g, 0.0f, 1.0f));
+            result <<= 8;
+            result |= static_cast<UInt>(0xff * std::clamp(b, 0.0f, 1.0f));
+            return result;
+        }
         operator UInt()
         {
             UInt result = 0;
