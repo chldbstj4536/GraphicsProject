@@ -1,0 +1,9 @@
+[submodule "submodules/YSMath"]
+	path = submodules/YSMath
+	url = ../YSMath.git
+[submodule "submodules/YSEvent"]
+	path = submodules/YSEvent
+	url = ../YSEvent.git
+[submodule "submodules/YSUtility"]
+	path = submodules/YSUtility
+	url = ../YSUtility.git
