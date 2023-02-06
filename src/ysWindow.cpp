@@ -1,6 +1,6 @@
-﻿#include "ysWindow.h"
-#include "ysRenderer.h"
-#include "ysBuffer.h"
+﻿#include "ysWindow.hpp"
+#include "Renderer/ysRenderer.hpp"
+#include "ysBuffer.hpp"
 
 using namespace YS::Graphics;
 

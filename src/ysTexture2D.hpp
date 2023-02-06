@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "ysGraphicsDefine.h"
+#include "ysGraphicsDefine.hpp"
 
 #ifdef _WIN32
 #include <Windows.h>

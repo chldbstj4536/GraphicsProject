@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <ysDefine.h>
+#include <ysDefine.hpp>
 #include <algorithm>
 
 namespace YS::Graphics

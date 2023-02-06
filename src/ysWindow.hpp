@@ -2,9 +2,9 @@
 
 #include <memory>
 #include <thread>
-#include <ysEvent.h>
-#include <ysUtility.h>
-#include "ysGraphicsDefine.h"
+#include <ysEvent.hpp>
+#include <ysUtility.hpp>
+#include "ysGraphicsDefine.hpp"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -78,7 +78,7 @@ namespace YS::Graphics
 #ifdef _WIN32
         Event<void(HDC)> OnDraw;
 #endif
-        ENABLE_MAKE_SHARED_DECL
+        ENABLE_MAKE_SHARED_DECL;
     };
-    ENABLE_MAKE_SHARED(Window)
+    ENABLE_MAKE_SHARED(Window);
 }

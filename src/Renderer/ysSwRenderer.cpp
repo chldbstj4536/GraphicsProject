@@ -1,30 +1,26 @@
-﻿#include "ysRenderer.h"
-#include "ysWindow.h"
-#include "ysTexture2D.h"
+﻿#include "ysRenderer.hpp"
+#include "../ysWindow.hpp"
+#include "../ysTexture2D.hpp"
 #include <functional>
 
 using namespace YS::Graphics;
 
-Renderer::Renderer(std::shared_ptr<Window> window)
-    : m_pWindow(window)
-    , m_vp{ window->GetPosX(), window->GetPosY(), window->GetWidth(), window->GetHeight() }
-{}
-SwRenderer::SwRenderer(std::shared_ptr<Window> window) : Renderer(window)
+Renderer::SwRenderer::SwRenderer(std::shared_ptr<Window> window) : Renderer(window)
 {
     m_pRT[0] = std::make_shared<SwTexture2D>(window->GetWidth(), window->GetHeight());
     m_pRT[1] = std::make_shared<SwTexture2D>(window->GetWidth(), window->GetHeight());
 }
 
-std::shared_ptr<SwRenderer> SwRenderer::Create(std::shared_ptr<Window> window)
+std::shared_ptr<Renderer::SwRenderer> Renderer::SwRenderer::Create(std::shared_ptr<Window> window)
 {
-    std::shared_ptr<SwRenderer> pSwRenderer = std::make_shared<enable_make_shared>(window);
+    auto pSwRenderer = std::make_shared<Renderer::SwRenderer>(window);
 
     window->OnDraw.AddListener(pSwRenderer, &SwRenderer::Draw);
 
     return pSwRenderer;
 }
 
-void SwRenderer::Clear()
+void Renderer::SwRenderer::Clear()
 {
 #ifdef _WIN32
     for (UInt i = 0; i < GetViewport().width; ++i)
@@ -32,14 +28,28 @@ void SwRenderer::Clear()
             m_pRT[0]->SetPixel(i, j, GetClearColor().ConvertToARGB());
 #endif
 }
-void SwRenderer::Swap()
+void Renderer::SwRenderer::Draw()
+{
+
+}
+void Renderer::SwRenderer::Swap()
 {
     std::swap(m_pRT[0], m_pRT[1]);
     GetWindow().lock()->Swap();
 }
+void Renderer::SwRenderer::SetViewport(Viewport const& r)
+{
+    Renderer::SetViewport(r);
+
+}
+void Renderer::SwRenderer::SetClearColor(Color const& clearColor)
+{
+    Renderer::SetClearColor(clearColor);
+
+}
 
 #ifdef _WIN32
-void SwRenderer::Draw(HDC hdc)
+void Renderer::SwRenderer::Draw(HDC hdc)
 {
     BitBlt(hdc, 0, 0, GetViewport().width, GetViewport().height, m_pRT[1]->GetHDC(), 0, 0, SRCCOPY);
 }

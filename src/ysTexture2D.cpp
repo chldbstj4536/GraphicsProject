@@ -1,4 +1,4 @@
-﻿#include "ysTexture2D.h"
+﻿#include "ysTexture2D.hpp"
 
 using namespace YS::Graphics;
 
