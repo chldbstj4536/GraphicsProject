@@ -14,8 +14,8 @@ int main()
 {
     HWND hWndConsole = GetConsoleWindow();
 
-    std::shared_ptr<Window> pWin = Window::Create(Rect{ 100, 100, 800, 600 }, TEXT("Learn to Program Windows"), Window::WindowStyle::Full_Borderless);
-    std::shared_ptr<Renderer> pSwRenderer = Renderer::Create(RendererType::Software, pWin);
+    std::shared_ptr<Window> pWin = Window::Create(Rect{ 100, 100, 800, 600 }, TEXT("Learn to Program Windows"), Window::WindowMode::Full_Borderless);
+    std::shared_ptr<Renderer> pSwRenderer = Renderer::Create(RendererType::Software, pWin, {0, 0, 400, 300, 1.0f, 1.0f});
 
     pSwRenderer->SetClearColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     while (!pWin->IsClosed())

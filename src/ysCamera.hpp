@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <ysVector.hpp>
+#include "ysGraphicsDefine.hpp"
 
 namespace YS::Graphics
 {
@@ -14,10 +14,10 @@ namespace YS::Graphics
         Camera& operator=(Camera const &) = delete;
         Camera& operator=(Camera &&) = delete;
 
-        Camera(Math::Vector3 pos);
+        Camera(Rect vp, Float near, Float far);
 
     private:
-        Math::Vector3 pos;
-        //Math::Vector4 rot;
+        Rect m_vp;
+        Float m_near, m_far;
     };
 }

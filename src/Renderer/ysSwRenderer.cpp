@@ -5,17 +5,17 @@
 
 using namespace YS::Graphics;
 
-Renderer::SwRenderer::SwRenderer(std::shared_ptr<Window> window) : Renderer(window)
+Renderer::SwRenderer::SwRenderer(std::shared_ptr<Window> pWindow) : Renderer(pWindow)
 {
-    m_pRT[0] = std::make_shared<SwTexture2D>(window->GetWidth(), window->GetHeight());
-    m_pRT[1] = std::make_shared<SwTexture2D>(window->GetWidth(), window->GetHeight());
+    m_pRT[0] = std::make_shared<SwTexture2D>(pWindow->GetWidth(), pWindow->GetHeight());
+    m_pRT[1] = std::make_shared<SwTexture2D>(pWindow->GetWidth(), pWindow->GetHeight());
 }
 
-std::shared_ptr<Renderer::SwRenderer> Renderer::SwRenderer::Create(std::shared_ptr<Window> window)
+std::shared_ptr<Renderer::SwRenderer> Renderer::SwRenderer::Create(std::shared_ptr<Window> pWindow, Viewport const &vp)
 {
-    auto pSwRenderer = std::make_shared<Renderer::SwRenderer>(window);
+    auto pSwRenderer = std::make_shared<Renderer::SwRenderer>(pWindow);
 
-    window->OnDraw.AddListener(pSwRenderer, &SwRenderer::Draw);
+    pWindow->OnDraw.AddListener(pSwRenderer, &SwRenderer::Draw);
 
     return pSwRenderer;
 }

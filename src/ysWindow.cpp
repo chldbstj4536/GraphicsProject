@@ -1,17 +1,19 @@
-﻿#include "ysWindow.hpp"
+﻿// Todo #1: 윈도우 모드 변경 추가 line:114
+
+#include "ysWindow.hpp"
 #include "Renderer/ysRenderer.hpp"
 #include "ysBuffer.hpp"
 
 using namespace YS::Graphics;
 
-Window::Window(Rect r, StringView name) : m_rect(r), m_name(name) { }
+Window::Window(Rect r, StringView name, WindowMode winMode) : m_rect(r), m_name(name), m_winMode(winMode) { }
 Window::~Window() { SendMessage(m_hWnd, WM_DESTROY, 0, 0); m_msgThread.join(); }
     
-std::shared_ptr<Window> Window::Create(Rect r, StringView name, WindowStyle ws)
+std::shared_ptr<Window> Window::Create(Rect r, StringView name, WindowMode winMode)
 {
-    std::shared_ptr<Window> pWin = std::make_shared<enable_make_shared>(r, name);
+    std::shared_ptr<Window> pWin = std::make_shared<enable_make_shared>(r, name, winMode);
     pWin->m_msgThread = std::thread(
-        [pWin, ws]()
+        [pWin]()
         {
             WNDCLASS wc = { 0 };
 
@@ -21,28 +23,28 @@ std::shared_ptr<Window> Window::Create(Rect r, StringView name, WindowStyle ws)
 
         RegisterClass(&wc);
 
-        int wsStyle = 0;
+        int winMode = 0;
         int showStyle = SW_SHOWNORMAL;
-        switch (ws)
+        switch (pWin->GetWindowMode())
         {
-        case WindowStyle::Fullscreen:
-            wsStyle |= WS_MAXIMIZE;
+        case WindowMode::Fullscreen:
+            winMode |= WS_MAXIMIZE;
             break;
-        case WindowStyle::Full_Borderless:
+        case WindowMode::Full_Borderless:
             pWin->m_rect.x = pWin->m_rect.y = 0;
-            wsStyle = WS_POPUP;
+            winMode = WS_POPUP;
             showStyle = SW_MAXIMIZE;
             break;
-        case WindowStyle::Borderless:
-            wsStyle = WS_POPUP;
+        case WindowMode::Borderless:
+            winMode = WS_POPUP;
             break;
-        case WindowStyle::Normal:
-            wsStyle = WS_OVERLAPPED;
+        case WindowMode::Normal:
+            winMode = WS_OVERLAPPED;
             break;
         }
 
         pWin->m_hWnd = CreateWindowEx(
-            WS_EX_APPWINDOW, pWin->m_name.c_str(), pWin->m_name.c_str(), wsStyle, pWin->m_rect.x, pWin->m_rect.y,
+            WS_EX_APPWINDOW, pWin->m_name.c_str(), pWin->m_name.c_str(), winMode, pWin->m_rect.x, pWin->m_rect.y,
             pWin->m_rect.width, pWin->m_rect.height, nullptr, nullptr, GetModuleHandle(nullptr), pWin.get()
         );
 
@@ -105,6 +107,12 @@ void Window::SetName(StringView name)
 #ifdef _WIN32
     SetWindowText(m_hWnd, m_name.c_str());
 #endif
+}
+void Window::SetWindowMode(WindowMode winMode)
+{
+    m_winMode = winMode;
+    // ToDo #1: 윈도우 모드 변경 해야함
+    OnChangedWinMode(winMode);
 }
 
 

@@ -6,21 +6,20 @@
 using namespace YS::Graphics;
 
 Renderer::Renderer(std::shared_ptr<Window> pWindow)
-    : m_pWindow(pWindow)
-    , m_vp{ pWindow->GetPosX(), pWindow->GetPosY(), pWindow->GetWidth(), pWindow->GetHeight() }
+    : m_pWindow{pWindow}
 {}
 
-std::shared_ptr<Renderer> Renderer::Create(RendererType rt, std::shared_ptr<Window> pWindow)
+std::shared_ptr<Renderer> Renderer::Create(RendererType rt, std::shared_ptr<Window> pWindow, Viewport const &vp)
 {
     std::shared_ptr<Renderer> pResult;
     switch (rt)
     {
     case RendererType::Software:
-        pResult = std::static_pointer_cast<Renderer>(SwRenderer::Create(pWindow));
+        pResult = std::static_pointer_cast<Renderer>(SwRenderer::Create(pWindow, vp));
         break;
     case RendererType::DirextX11:
 #ifdef _DX11
-        pResult = std::static_pointer_cast<Renderer>(Dx11Renderer::Create(pWindow));
+        pResult = std::static_pointer_cast<Renderer>(Dx11Renderer::Create(pWindow, vp));
 #else
         throw not_supported();
 #endif

@@ -2,16 +2,22 @@
 
 #include <memory>
 #include <ysUtility.hpp>
-#include "ysGraphicsDefine.hpp"
+#include "../ysGraphicsDefine.hpp"
 
 #ifdef _WIN32
-#include <Windows.h>
+    #include <Windows.h>
+#define _DX11
+    #include <wrl.h>
+    class ID3D11Device;
+    class ID3D11DeviceContext;
+    class IDXGISwapChain1;
 #endif
 
 namespace YS::Graphics
 {
     enum class RendererType { Software, DirextX11, DirectX12, OpenGL };
     class Window;
+    class Camera;
     class Renderer
     {
     public:
@@ -22,31 +28,18 @@ namespace YS::Graphics
         Renderer& operator=(Renderer const&) = delete;
         Renderer& operator=(Renderer&&) = delete;
     protected:
-        Renderer::Renderer(std::shared_ptr<Window> pWindow)
-            : m_pWindow(pWindow)
-            , m_vp{ pWindow->GetPosX(), pWindow->GetPosY(), pWindow->GetWidth(), pWindow->GetHeight() }
-        {}
+        Renderer(std::shared_ptr<Window> pWindow);
 
     public:
-        static std::shared_ptr<Renderer> Create(RendererType rt, std::shared_ptr<Window> pWindow)
-        {
-            std::shared_ptr<Renderer> pResult;
-            switch (rt)
-            {
-            case RendererType::Software:    pResult = SwRenderer::Create(pWindow); break;
-            case RendererType::DirextX11:   pResult = Dx11Renderer::Create(pWindow); break;
-            case RendererType::DirectX12:   pResult = Dx12Renderer::Create(pWindow); break;
-            case RendererType::OpenGL:      pResult = GlRenderer::Create(pWindow); break;
-            }
-            return pResult;
-        }
+        static std::shared_ptr<Renderer> Create(RendererType rt, std::shared_ptr<Window> pWindow, Viewport const &vp) throw(not_supported);
 
         virtual void Clear() = 0;
         virtual void Swap() = 0;
         virtual void Draw() = 0;
 
-        virtual void SetViewport(Viewport const &r) { m_vp = r; }
-        Viewport GetViewport() const { return m_vp; }
+        virtual void SetViewport(Viewport const &vp) { m_vp = vp; }
+        Viewport GetViewport() { return m_vp; }
+        virtual void SetCamera(Camera const &r) = 0;
 
         std::weak_ptr<Window> GetWindow() { return m_pWindow; }
         std::weak_ptr<const Window> GetWindow() const { return m_pWindow; }
@@ -75,15 +68,16 @@ namespace YS::Graphics
         SwRenderer& operator=(SwRenderer const&) = delete;
         SwRenderer& operator=(SwRenderer&&) = delete;
 
-        SwRenderer(std::shared_ptr<Window> window);
+        SwRenderer(std::shared_ptr<Window> pWindow);
 
-        static std::shared_ptr<Renderer> Create(std::shared_ptr<Window> window);
+        static std::shared_ptr<SwRenderer> Create(std::shared_ptr<Window> pWindow, Viewport const &vp);
 
         virtual void Clear() override;
         virtual void Draw() override;
         virtual void Swap() override;
 
-        virtual void SetViewport(Viewport const &r) override;
+        virtual void SetViewport(Viewport const& vp);
+        virtual void SetCamera(Camera const &r) override;
         virtual void SetClearColor(Color const &clearColor) override;
 
     private:
@@ -107,59 +101,65 @@ namespace YS::Graphics
         Dx11Renderer& operator=(Dx11Renderer const&) = delete;
         Dx11Renderer& operator=(Dx11Renderer&&) = delete;
 
-        Dx11Renderer(std::shared_ptr<Window> window);
+        Dx11Renderer(std::shared_ptr<Window> pWindow);
 
-        static std::shared_ptr<Renderer> Create(std::shared_ptr<Window> window);
-
-        virtual void Clear() override;
-        virtual void Swap() override;
-        virtual void Draw() override;
-
-        virtual void SetViewport(Viewport const &r) override;
-        virtual void SetClearColor(Color const &clearColor) override;
-    };
-
-    class Renderer::Dx12Renderer : public Renderer
-    {
-    public:
-        Dx12Renderer() = delete;
-        Dx12Renderer(Dx12Renderer const&) = delete;
-        Dx12Renderer(Dx12Renderer&&) = delete;
-        virtual ~Dx12Renderer() = default;
-        Dx12Renderer& operator=(Dx12Renderer const&) = delete;
-        Dx12Renderer& operator=(Dx12Renderer&&) = delete;
-        
-        Dx12Renderer(std::shared_ptr<Window> window);
-
-        static std::shared_ptr<Renderer> Create(std::shared_ptr<Window> window);
+        static std::shared_ptr<Dx11Renderer> Create(std::shared_ptr<Window> pWindow, Viewport const &vp);
 
         virtual void Clear() override;
         virtual void Swap() override;
         virtual void Draw() override;
 
-        virtual void SetViewport(Viewport const &r) override;
+        virtual void SetViewport(Viewport const &vp) override;
+        virtual void SetCamera(Camera const &r) override;
         virtual void SetClearColor(Color const &clearColor) override;
 
+    private:
+        Microsoft::WRL::ComPtr<ID3D11Device> m_pDevice;
+        Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_pDC;
+        Microsoft::WRL::ComPtr<IDXGISwapChain1> m_pSwapChain;
     };
-    class Renderer::GlRenderer : public Renderer
-    {
-    public:
-        GlRenderer() = delete;
-        GlRenderer(GlRenderer const&) = delete;
-        GlRenderer(GlRenderer&&) = delete;
-        virtual ~GlRenderer() = default;
-        GlRenderer& operator=(GlRenderer const&) = delete;
-        GlRenderer& operator=(GlRenderer&&) = delete;
 
-        GlRenderer(std::shared_ptr<Window> window);
+    //class Renderer::Dx12Renderer : public Renderer
+    //{
+    //public:
+    //    Dx12Renderer() = delete;
+    //    Dx12Renderer(Dx12Renderer const&) = delete;
+    //    Dx12Renderer(Dx12Renderer&&) = delete;
+    //    virtual ~Dx12Renderer() = default;
+    //    Dx12Renderer& operator=(Dx12Renderer const&) = delete;
+    //    Dx12Renderer& operator=(Dx12Renderer&&) = delete;
+    //    
+    //    Dx12Renderer(std::shared_ptr<Window> window);
 
-        static std::shared_ptr<Renderer> Create(std::shared_ptr<Window> window);
+    //    static std::shared_ptr<Dx12Renderer> Create(std::shared_ptr<Window> window);
 
-        virtual void Clear() override;
-        virtual void Swap() override;
-        virtual void Draw() override;
+    //    virtual void Clear() override;
+    //    virtual void Swap() override;
+    //    virtual void Draw() override;
 
-        virtual void SetViewport(Viewport const& r) override;
-        virtual void SetClearColor(Color const& clearColor) override;
-    };
+    //    virtual void SetCamera(Camera const &r) override;
+    //    virtual void SetClearColor(Color const &clearColor) override;
+
+    //};
+    //class Renderer::GlRenderer : public Renderer
+    //{
+    //public:
+    //    GlRenderer() = delete;
+    //    GlRenderer(GlRenderer const&) = delete;
+    //    GlRenderer(GlRenderer&&) = delete;
+    //    virtual ~GlRenderer() = default;
+    //    GlRenderer& operator=(GlRenderer const&) = delete;
+    //    GlRenderer& operator=(GlRenderer&&) = delete;
+
+    //    GlRenderer(std::shared_ptr<Window> window);
+
+    //    static std::shared_ptr<GlRenderer> Create(std::shared_ptr<Window> window);
+
+    //    virtual void Clear() override;
+    //    virtual void Swap() override;
+    //    virtual void Draw() override;
+
+    //    virtual void SetCamera(Camera const& r) override;
+    //    virtual void SetClearColor(Color const& clearColor) override;
+    //};
 }

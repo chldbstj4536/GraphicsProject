@@ -16,7 +16,7 @@ namespace YS::Graphics
     {
         enum class State { InInit, Success, Fail };
     public:
-        enum class WindowStyle { Fullscreen, Full_Borderless, Borderless, Normal};
+        enum class WindowMode { Fullscreen, Full_Borderless, Borderless, Normal};
 /// @cond
         Window() = delete;
         Window(Window const&) = delete;
@@ -26,7 +26,7 @@ namespace YS::Graphics
         Window& operator=(Window &&) = default;
 /// @endcond
     private:
-        Window(Rect rect, StringView name);
+        Window(Rect rect, StringView name, WindowMode winMode);
 
     public:
         /**
@@ -37,7 +37,7 @@ namespace YS::Graphics
          * @return 생성된 윈도우
          * @throw YS::create_failed 윈도우 생성 실패시 예외 발생
          */
-        static std::shared_ptr<Window> Create(Rect rect, StringView name, WindowStyle ws);
+        static std::shared_ptr<Window> Create(Rect rect, StringView name, WindowMode winMode);
         void Resize(UInt width, UInt height);
         void Move(Int x, Int y);
         void Swap();
@@ -48,6 +48,8 @@ namespace YS::Graphics
         UInt GetHeight() const { return m_rect.height; }
         Int GetPosX() const { return m_rect.x; }
         Int GetPosY() const { return m_rect.y; }
+        WindowMode GetWindowMode() { return m_winMode; }
+        void SetWindowMode(WindowMode winMode);
         bool IsClosed() const { return m_hWnd == nullptr; }
 
 #ifdef _WIN32
@@ -65,6 +67,7 @@ namespace YS::Graphics
         String m_name;
         Rect m_rect;
         State m_state = State::InInit;
+        WindowMode m_winMode;
         bool m_isSwap = false;
         std::thread m_msgThread;
 
@@ -75,6 +78,7 @@ namespace YS::Graphics
     public:
         Event<void(UInt, UInt)> OnResize;
         Event<void(Int, Int)> OnMove;
+        Event<void(WindowMode)> OnChangedWinMode;
 #ifdef _WIN32
         Event<void(HDC)> OnDraw;
 #endif

@@ -1,12 +1,21 @@
 ﻿#pragma once
 
+#include <cmath>
 #include <ysDefine.hpp>
 #include <algorithm>
 
 namespace YS::Graphics
 {
     struct Rect { Int x, y; UInt width, height; };
-    using Viewport = Rect;
+    struct Viewport
+    {
+        UInt GetAbsoluteX() { if (-1.0f <= x && x <= 1.0f) return x * width; return static_cast<Int>(x); }
+        UInt GetAbsoluteY() { if (-1.0f <= y && y <= 1.0f) return y * height; return static_cast<Int>(y); }
+
+        Float x, y;
+        UInt width, height;
+        Float near, far;
+    };
     struct Color
     {
         Color() = default;
