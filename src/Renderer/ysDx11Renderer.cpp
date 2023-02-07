@@ -49,7 +49,9 @@ void Renderer::Dx11Renderer::SetViewport(Viewport const& vp)
 {
     Renderer::SetViewport(vp);
 
-    DXGI_SWAP_CHAIN_DESC1 sd;
+    HRESULT hr;
+
+    DXGI_SWAP_CHAIN_DESC1 sd{};
     sd.Width = vp.width;
     sd.Height = vp.height;
     sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -60,8 +62,8 @@ void Renderer::Dx11Renderer::SetViewport(Viewport const& vp)
     sd.SampleDesc.Quality = 0;
 
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.BufferCount = 1;
-    sd.Scaling = DXGI_SCALING::DXGI_SCALING_NONE;
+    sd.BufferCount = 2;
+    sd.Scaling = DXGI_SCALING::DXGI_SCALING_STRETCH;
     sd.SwapEffect = DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD;
     sd.AlphaMode = DXGI_ALPHA_MODE::DXGI_ALPHA_MODE_UNSPECIFIED;
     sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
@@ -69,7 +71,7 @@ void Renderer::Dx11Renderer::SetViewport(Viewport const& vp)
 
     DXGI_SWAP_CHAIN_FULLSCREEN_DESC sfd
     {
-        {144, 0},
+        {144, 1},
         DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
         DXGI_MODE_SCALING_UNSPECIFIED,
         GetWindow().lock()->GetWindowMode() == Window::WindowMode::Fullscreen
@@ -78,12 +80,13 @@ void Renderer::Dx11Renderer::SetViewport(Viewport const& vp)
     Microsoft::WRL::ComPtr<IDXGIDevice> pDxgiDevice;
     Microsoft::WRL::ComPtr<IDXGIAdapter> pDxgiAdapter;
     Microsoft::WRL::ComPtr<IDXGIFactory2> pDxgiFactory;
-    if (FAILED(m_pDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDxgiDevice)))
-        throw create_failed();
-    if (FAILED(pDxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&pDxgiAdapter)))
-        throw create_failed();
-    if (FAILED(pDxgiAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&pDxgiFactory)))
-        throw create_failed();
-    if (pDxgiFactory->CreateSwapChainForHwnd(m_pDevice.Get(), GetWindow().lock()->GetHWnd(), &sd, &sfd, nullptr, m_pSwapChain.GetAddressOf()))
-        throw create_failed();
+
+    hr = m_pDevice.As(&pDxgiDevice);
+    if (FAILED(hr)) throw create_failed();
+    hr = pDxgiDevice->GetAdapter(pDxgiAdapter.GetAddressOf());
+    if (FAILED(hr)) throw create_failed();
+    hr = pDxgiAdapter->GetParent(__uuidof(pDxgiFactory), reinterpret_cast<void**>(pDxgiFactory.GetAddressOf()));
+    if (FAILED(hr)) throw create_failed();
+    hr = pDxgiFactory->CreateSwapChainForHwnd(m_pDevice.Get(), GetWindow().lock()->GetHWnd(), &sd, nullptr, nullptr, m_pSwapChain.GetAddressOf());
+    if (FAILED(hr)) throw create_failed();
 }

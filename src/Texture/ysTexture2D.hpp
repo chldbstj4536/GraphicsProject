@@ -1,6 +1,7 @@
 ﻿#pragma once
 
-#include "ysGraphicsDefine.hpp"
+#include "../ysGraphicsDefine.hpp"
+#include "../ysFormat.hpp"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -8,23 +9,19 @@
 
 namespace YS::Graphics
 {
-    enum class TEXTURE_DATA_SET
-    {
-        RGBA_32,
-        RGB_24
-    };
-
     class Texture2D
     {
     public:
-        Texture2D() = default;
-        Texture2D(Texture2D const &) = default;
-        Texture2D(Texture2D &&) = default;
-        virtual ~Texture2D() = default;
-        Texture2D &operator=(Texture2D const &) = default;
-        Texture2D &operator=(Texture2D &&) = default;
+        enum class Usage { Default, Immutable, Dynamic, Staging };
 
-        Texture2D(UInt width, UInt height) : m_width(width), m_height(height) {}
+        Texture2D() = delete;
+        Texture2D(Texture2D const &) = delete;
+        Texture2D(Texture2D &&) = delete;
+        virtual ~Texture2D() = default;
+        Texture2D &operator=(Texture2D const &) = delete;
+        Texture2D &operator=(Texture2D &&) = delete;
+
+        Texture2D(UInt width, UInt height, UInt MipLv, UInt ArrSize, TextureFormat format, TextureAccess access, ) : m_width(width), m_height(height) {}
 
         virtual void SetPixel(UInt x, UInt y, UInt32 c) = 0;
         virtual UInt32 GetPixel(UInt x, UInt y) const = 0;

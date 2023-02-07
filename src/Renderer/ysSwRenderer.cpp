@@ -42,11 +42,6 @@ void Renderer::SwRenderer::SetViewport(Viewport const& r)
     Renderer::SetViewport(r);
 
 }
-void Renderer::SwRenderer::SetClearColor(Color const& clearColor)
-{
-    Renderer::SetClearColor(clearColor);
-
-}
 
 #ifdef _WIN32
 void Renderer::SwRenderer::Draw(HDC hdc)

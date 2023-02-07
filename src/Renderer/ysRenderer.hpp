@@ -39,7 +39,7 @@ namespace YS::Graphics
 
         virtual void SetViewport(Viewport const &vp) { m_vp = vp; }
         Viewport GetViewport() { return m_vp; }
-        virtual void SetCamera(Camera const &r) = 0;
+        //virtual void SetCamera(Camera const &r) = 0;
 
         std::weak_ptr<Window> GetWindow() { return m_pWindow; }
         std::weak_ptr<const Window> GetWindow() const { return m_pWindow; }
@@ -77,18 +77,14 @@ namespace YS::Graphics
         virtual void Swap() override;
 
         virtual void SetViewport(Viewport const& vp);
-        virtual void SetCamera(Camera const &r) override;
-        virtual void SetClearColor(Color const &clearColor) override;
+        //virtual void SetCamera(Camera const &r) override;
 
     private:
 #ifdef _WIN32
         void Draw(HDC hdc);
 #endif
         std::shared_ptr<SwTexture2D> m_pRT[2];
-
-        ENABLE_MAKE_SHARED_DECL;
     };
-    ENABLE_MAKE_SHARED(Renderer::SwRenderer);
 
     class DxTexture2D;
     class Renderer::Dx11Renderer : public Renderer
@@ -110,8 +106,7 @@ namespace YS::Graphics
         virtual void Draw() override;
 
         virtual void SetViewport(Viewport const &vp) override;
-        virtual void SetCamera(Camera const &r) override;
-        virtual void SetClearColor(Color const &clearColor) override;
+        //virtual void SetCamera(Camera const &r) override;
 
     private:
         Microsoft::WRL::ComPtr<ID3D11Device> m_pDevice;
